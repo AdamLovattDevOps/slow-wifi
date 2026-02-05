@@ -158,7 +158,7 @@ def analyze_lan(target):
         }
         
         if loss_pct > 0: json_summary["diagnosis"].append("Packet Loss detected (Wi-Fi interference or hardware fault)")
-        if avg_jitter > 4: json_summary["diagnosis"].append("High Jitter (Mouse floatiness imminent)")
+        if avg_jitter > 4: json_summary["diagnosis"].append("High Jitter (Mouse stickiness / skipped frames)")
         if stats["spikes"] > (stats["sent"] * 0.05): json_summary["diagnosis"].append("Frequent Latency Spikes (Background process interruption)")
         
         logger.log(json.dumps(json_summary, indent=4))
