@@ -10,13 +10,21 @@ Scripts to diagnose and fix Wi-Fi latency issues on macOS caused by AWDL (AirDro
 
 ## Quick Fix
 
-If you just want to disable AWDL:
-
 ```bash
+# Disable AWDL immediately
 sudo ifconfig awdl0 down
+
+# Disable AirDrop permanently
+defaults write com.apple.NetworkBrowser DisableAirDrop -bool YES
+
+# Disable Handoff
+defaults write com.apple.coreservices.useractivityd ActivityAdvertisingAllowed -bool NO
+defaults write com.apple.coreservices.useractivityd ActivityReceivingAllowed -bool NO
 ```
 
-See the [blog post](https://adamlovattdevops.github.io/awdl-latency-killer/) for permanent fix and full analysis.
+Also disable in **System Settings → General → AirDrop & Handoff**.
+
+See the [full blog post](https://adamlovattdevops.github.io/awdl-latency-killer/) for analysis and details.
 
 ## Disclaimer
 
