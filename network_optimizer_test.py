@@ -17,11 +17,12 @@ from dataclasses import dataclass, asdict
 from typing import Optional, Callable
 
 # --- CONFIGURATION ---
-TARGET = "192.168.0.243"
 PINGS_PER_TEST = 200
 PING_INTERVAL = 0.2
 SPIKE_THRESHOLD = 15.0
 # ---------------------
+
+import argparse
 
 @dataclass
 class TestResult:
@@ -136,7 +137,8 @@ SETTINGS = [
 ]
 
 class NetworkOptimizer:
-    def __init__(self):
+    def __init__(self, target):
+        self.target = target
         self.results: list[TestResult] = []
         self.original_states: dict[str, str] = {}
         self.report_file = f"optimizer_report_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
@@ -194,13 +196,13 @@ class NetworkOptimizer:
     def run_ping_test(self, label: str, setting_value: str) -> TestResult:
         """Run a ping test and collect statistics."""
         log(f"\n🔬 Testing: {label} = {setting_value}", Colors.BOLD)
-        log(f"   Sending {PINGS_PER_TEST} pings to {TARGET}...")
+        log(f"   Sending {PINGS_PER_TEST} pings to {self.target}...")
 
         rtts = []
         lost = 0
 
         for i in range(PINGS_PER_TEST):
-            cmd = ["ping", "-c", "1", "-W", "1000", TARGET]
+            cmd = ["ping", "-c", "1", "-W", "1000", self.target]
             result = subprocess.run(cmd, capture_output=True, text=True)
 
             match = re.search(r'time=([\d.]+)', result.stdout)
@@ -277,7 +279,7 @@ class NetworkOptimizer:
         log("=" * 60, Colors.BOLD)
         log("  NETWORK LATENCY OPTIMIZER - DIAGNOSTIC TEST", Colors.BOLD)
         log("=" * 60, Colors.BOLD)
-        log(f"Target: {TARGET}")
+        log(f"Target: {self.target}")
         log(f"Pings per test: {PINGS_PER_TEST}")
         log(f"Spike threshold: {SPIKE_THRESHOLD}ms")
 
@@ -346,7 +348,7 @@ class NetworkOptimizer:
         # Prepare report data
         report = {
             "test_date": datetime.datetime.now().isoformat(),
-            "target": TARGET,
+            "target": self.target,
             "pings_per_test": PINGS_PER_TEST,
             "spike_threshold_ms": SPIKE_THRESHOLD,
             "original_settings": self.original_states,
@@ -419,6 +421,10 @@ class NetworkOptimizer:
             log("   The issue may be hardware or router-related.", Colors.YELLOW)
 
 def main():
+    parser = argparse.ArgumentParser(description="Network latency optimizer - tests various macOS settings")
+    parser.add_argument("target", help="Target IP address to ping (e.g., 192.168.1.1)")
+    args = parser.parse_args()
+
     log("\n🔍 Network Latency Optimizer - Diagnostic Mode", Colors.BOLD)
     log("   This will test various macOS network settings")
     log("   and measure their impact on latency.\n")
@@ -427,7 +433,7 @@ def main():
     check_sudo()
 
     # Run tests
-    optimizer = NetworkOptimizer()
+    optimizer = NetworkOptimizer(args.target)
 
     try:
         optimizer.run_all_tests()

@@ -2,13 +2,13 @@ import subprocess
 import time
 import re
 import sys
+import argparse
 import statistics
 import platform
 import datetime
 import json
 
 # --- CONFIGURATION ---
-TARGET = "192.168.0.243"
 INTERVAL = 0.2
 SPIKE_THRESHOLD = 15.0
 # ---------------------
@@ -53,13 +53,13 @@ def parse_time(output):
     if match: return float(match.group(1))
     return None
 
-def analyze_lan():
+def analyze_lan(target):
     logger = Logger()
-    
+
     # Header
     logger.log("--- LAN LATENCY DIAGNOSTIC REPORT ---")
     logger.log(f"Start Time: {datetime.datetime.now()}")
-    logger.log(f"Target IP: {TARGET}")
+    logger.log(f"Target IP: {target}")
     logger.log(f"Ping Interval: {INTERVAL}s")
     logger.log(f"Spike Threshold: {SPIKE_THRESHOLD}ms")
     logger.log("-" * 60)
@@ -76,7 +76,7 @@ def analyze_lan():
 
     try:
         while True:
-            cmd = get_ping_command(TARGET)
+            cmd = get_ping_command(target)
             # Run ping
             result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             timestamp = datetime.datetime.now().strftime('%H:%M:%S.%f')[:-3]
@@ -146,7 +146,7 @@ def analyze_lan():
         # --- BOT-FRIENDLY JSON BLOCK ---
         logger.log("\n--- MACHINE READABLE SUMMARY (JSON) ---")
         json_summary = {
-            "target": TARGET,
+            "target": target,
             "duration_seconds": stats["sent"] * INTERVAL,
             "total_packets": stats["sent"],
             "packet_loss_pct": round(loss_pct, 2),
@@ -166,4 +166,7 @@ def analyze_lan():
         print(f"\n{Colors.BOLD}Report saved to: {logger.filename}{Colors.RESET}")
 
 if __name__ == "__main__":
-    analyze_lan()
+    parser = argparse.ArgumentParser(description="LAN latency diagnostic tool")
+    parser.add_argument("target", help="Target IP address to ping (e.g., 192.168.1.1)")
+    args = parser.parse_args()
+    analyze_lan(args.target)
