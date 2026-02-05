@@ -1,0 +1,18 @@
+# Reports and generated files
+*.json
+*.txt
+*.png
+*.pdf
+
+# Python
+__pycache__/
+*.pyc
+
+# macOS
+.DS_Store
+
+# Claude
+.claude/
+
+# Blog source (published separately)
+blog/
